@@ -31,3 +31,5 @@ To provide insights into the current flight mode of the drone, the interface inc
 
 ### References
 QFlightinstruments - A reference project that provides flight instruments for QT applications. This project can be used as a resource for implementing flight mode indicators and other relevant features in the drone desktop interface.
+### important Note
+You need to change serial port variables and lenght depending on your system in the function readSerialData()
