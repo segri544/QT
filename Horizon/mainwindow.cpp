@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->progressBar_2->setRange(1000,2000);
     ui->progressBar_3->setRange(1000,2000);
     ui->progressBar_4->setRange(1000,2000);
-    ui->progressBar_5->setRange(1110,1260);
+    ui->progressBar_5->setRange(1060,1260);
     ui->verticalSlider->setRange(1,18);
 
     ui->verticalSlider->setValue(17);
@@ -36,9 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->progressBar_3->setAlignment(Qt::AlignCenter); // Set the alignment to center
     ui->progressBar_4->setAlignment(Qt::AlignCenter); // Set the alignment to center
     ui->progressBar_5->setAlignment(Qt::AlignCenter); // Set the alignment to center
-    ui->lineEdit->setText("N/A");
-    ui->lineEdit_2->setText("N/A");
-    ui->lineEdit_3->setText("N/A");
+    ui->lineGoing->setText("N/A");
+    ui->lineFlightMode->setText("Manual");
+    ui->lineComing->setText("N/A");
     ui->lineEdit_7->setText("N/A");
     ui->lineEdit_8->setText("N/A");
 
@@ -90,14 +90,12 @@ void MainWindow::on_Pconnect_clicked()
         m_serialPort.open(QIODevice::ReadWrite);
 
         // Set up the timer for readSerialData
-        ui->label_15->setText("<html><font color='lightgreen'><b> CONNECTED </b></font></html>");
+        ui->label_15->setText("<html><font color='green'><b> CONNECTED </b></font></html>");
         connect(&timerReadSerialData, &QTimer::timeout, this, &MainWindow::readSerialData);
         timerReadSerialData.start(50);
         connect(&timerUpdateLocation, &QTimer::timeout, this, &MainWindow::updateLocation);
         timerUpdateLocation.start(50);
     }
-
-
 }
 
 // Disconnect from port
@@ -122,9 +120,8 @@ void MainWindow::on_Pdisconnect_clicked()
         //    ui->progressBar_3->setAlignment(Qt::AlignCenter); // Set the alignment to center
         //    ui->progressBar_4->setAlignment(Qt::AlignCenter); // Set the alignment to center
         //    ui->progressBar_5->setAlignment(Qt::AlignCenter); // Set the alignment to center
-        ui->lineEdit->setText("N/A");
-        ui->lineEdit_2->setText("N/A");
-        ui->lineEdit_3->setText("N/A");
+        ui->lineComing->setText("N/A");
+        ui->lineGoing->setText("N/A");
         ui->lineEdit_7->setText("N/A");
         ui->lineEdit_8->setText("N/A");
     }
@@ -194,6 +191,12 @@ void MainWindow::readSerialData(){
         stream >> longtitude;
         stream >> latitude;
         stream >> bos;
+        cout<<"status:"<<status<<endl;
+        cout<<"roll:"<<roll/100.0<<endl;
+        cout<<"pitch:"<<pitch/100.0<<endl;
+        cout<<"yaw:"<<yaw/100.0<<endl;
+        cout<<"battery: "<<battery<<endl;
+        cout<<"-----------:"<<endl;
 //        cout << "unlem: "<<unlem<< endl;
 //        cout<<"status:"<<status<<endl;
 //        cout<<"motor1:"<<motor1<<endl;
@@ -208,11 +211,25 @@ void MainWindow::readSerialData(){
 //        cout<<"longtitude:"<<longtitude<<endl;
 //        cout<<"latitude:"<<latitude<<endl;
 //        cout<<"bos:"<<bos<<endl;
-
+        if (status==1){
+            ui->lineFlightMode->setText("Manual");
+        }
+        else if  (status==2){
+            ui->lineFlightMode->setText("Altitude Hold");
+        }
+        else if (status == 3) {
+            ui->lineFlightMode->setText("Alt&Gps Hold");
+        }
         ui->progressBar->setValue(motor1);
         ui->progressBar_2->setValue(motor2);
         ui->progressBar_3->setValue(motor3);
         ui->progressBar_4->setValue(motor4);
+        ui->graphicsEDAI->setAltitude(altitude/10.0);
+        ui->graphicsEDAI->setPitch((pitch/100.0));
+        ui->graphicsEDAI->setRoll(((-1)*roll/100.0));
+        ui->graphicsEDAI->setHeading((yaw/100.0));
+
+        ui->graphicsEDAI->redraw();
 
         // batarya için şey ekle eger motorlar %5 ten küçükse vaya sıfırsa değerini güncellesin
         ui->progressBar_5->setValue(battery);
@@ -230,11 +247,15 @@ void MainWindow::updateLocation(){
 //    emit setCenter(39.939550, 32.821720);
 //    emit addMarker(39.93960, 32.82180);
     if (setCenterCounter==100){ // 100*50ms =5s de bir markere center yapar. tabi geçici çözüm
-        emit setCenter(QString::number(longtitude / 10000000.0, 'f', 7), QString::number(latitude / 10000000.0, 'f', 7));  //BU PEK MANTIKLI DEĞİL MOUSE EKLİCEM
+//        emit setCenter(QString::number(latitude / 10000000.0, 'f', 6), QString::number(longtitude / 10000000.0, 'f', 6));  //BU PEK MANTIKLI DEĞİL MOUSE EKLİCEM
+        emit setCenter((latitude / 10000000.0), (longtitude / 10000000.0));
+
         setCenterCounter=0;
     }
     setCenterCounter++;
-    emit addMarker(QString::number(longtitude / 10000000.0, 'f', 7), QString::number(latitude / 10000000.0, 'f', 7));
+//    emit addMarker(QString::number(latitude / 10000000.0, 'f', 6), QString::number(longtitude / 10000000.0, 'f', 6));
+    emit addMarker((latitude / 10000000.0), (longtitude / 10000000.0));
+
 }
 
 
