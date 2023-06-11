@@ -1,5 +1,6 @@
 # Drone Desktop Interface with QT
 This project provides a desktop interface for controlling a drone using C++ and QT. The interface includes various features such as a map display, baud rate and port selection, motor speed control, a flight simulator cockpit, battery percentage indicator, and flight mode indicator.
+
 ![image](https://github.com/segri544/QT/assets/111482228/6eb6e630-2283-45b3-931e-9e436e4ea398)
 
 
